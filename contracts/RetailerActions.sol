@@ -44,16 +44,40 @@ interface RetailerActions is ProductTypes{
         uint32 returnDate // timestamp when returned
     );
 
+    // --------------- Functions ----------------
+    // These are the actions that a Retailer can perform
+
+    /**
+    Function: receiveInventory
+    The retailer confirms they received certain products.
+    This should update the product status to "IN_STORE".
+
+    **/
+
     function receiveInventory(
         uint256[] calldata productIds,  // List of Product Ids the retailer received
         uint32 receiveDate // timestamp when products received
     ) external;
 
+
+    /**
+    Function: markAsSold
+    Marks a product as sold when a customer buys it at checkout.
+    This changes its status to "SOLD".
+
+    **/
     function markAsSold(
         uint256 productId,
         bytes32 receiptId,
         uint32 saleDate
     ) external;
+
+    /**
+    Function: processReturn
+    Called when a customer returns a product to the store.
+    This changes the product’s status back to "RETURNED".
+
+    **/
 
     function processReturn(
         uint256 productId,
