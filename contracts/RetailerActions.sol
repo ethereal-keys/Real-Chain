@@ -29,24 +29,24 @@ interface RetailerActions is ProductTypes{
     // These are like logs. They record what happened in blockchain
 
     event InventoryReceived(
-        uint256 indexed productId,
-        address indexed retailer,
-        uint32 receiveDate
+        uint256 indexed productId, // Product Id
+        address indexed retailer, //Retailer name who recieved the product
+        uint32 receiveDate // timestamp when received
     );
     event ProductSold(
-        uint256 indexed productId,
-        bytes32 receiptId,
-        uint32 saleDate
+        uint256 indexed productId, // product Id which was sold
+        bytes32 receiptId, // receipt or order number (hashed)
+        uint32 saleDate // timestamp when sold
     );
     event ReturnProcessed(
-        uint256 indexed productId,
-        bytes32 returnId,
-        uint32 returnDate
+        uint256 indexed productId, // product Id which was returned
+        bytes32 returnId, // return Id
+        uint32 returnDate // timestamp when returned
     );
 
     function receiveInventory(
-        uint256[] calldata productIds,
-        uint32 receiveDate
+        uint256[] calldata productIds,  // List of Product Ids the retailer received
+        uint32 receiveDate // timestamp when products received
     ) external;
 
     function markAsSold(
