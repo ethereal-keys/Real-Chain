@@ -67,12 +67,26 @@ interface DistributorActions is ProductTypes {
 
     // --------------- Functions ----------------
 
+    /**
+    Function: batchTransferToDistributor
+    Called when a manufacturer ships multiple products to a distributor.
+    This moves product ownership from the factory to the distributor and updates the status to "WITH_DISTRIBUTOR".
+
+    **/
 
     function batchTransferToDistributor(
         uint256[] calldata productIds,  // list of products being sent
         address distributor,    // distributor receving it
         uint32 shipDate // timestamp of shipment
     ) external;
+
+    /**
+    Function: createRetailShipment
+    Called when the distributor sends products to a retailer.
+    Doesn’t transfer ownership.
+    Just declares that a shipment has been made, so the retailer can confirm it later.
+
+    **/
 
     function createRetailShipment(
         uint256[] calldata productIds,
@@ -81,11 +95,26 @@ interface DistributorActions is ProductTypes {
         bytes32 waybillHash
     ) external;
 
+    /**
+    Function: updateShippingStatus
+    The distributor record delivery progress for one or more products.
+    For example, "Left warehouse" or "Arrived at sorting center."
+
+    **/
+
     function updateShippingStatus(
         uint256[] calldata productIds,
         bytes32 trackingHash,
         uint32 updatedAt
     ) external;
+
+    /**
+    Function: reportDamaged
+    The distributor mark a product as damaged during shipping.
+    Doesn’t delete or transfer the product.
+    Tt simply records the incident and stores the report’s hash for future reference.
+
+    **/
 
     function reportDamaged(
         uint256 productId,
