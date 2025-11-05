@@ -51,3 +51,41 @@ modifier onlyRole(bytes32 role) {
     require(hasRole[msg.sender][role], "Unauthorized: Incorrect Role"); // Used to enforce role-based access control
     _;
 }
+
+
+// --------------- Functions ----------------
+
+function grantRole(address _account, bytes32 _role)
+    external
+    onlyRole(ADMIN_ROLE)
+{
+    /**
+        Function: grantRole
+        Used by the admin when assigning role to a wallet.
+    **/
+}
+
+
+function revokeRole(address _account, bytes32 _role)
+    external
+    onlyRole(ADMIN_ROLE)
+{
+    /**
+        Function: revokeRole
+        Used by the admin to revoke role from a wallet.
+    **/
+}
+
+
+function hasRoleAssigned(address _account, bytes32 _role)
+    external
+    view
+    returns (bool)
+{
+    /**
+        Function: hasRoleAssigned
+        Used by the admin to verify if role is assigned to an account.
+        Returns true if that account has that role
+    **/
+    return hasRole[_account][_role];
+}
