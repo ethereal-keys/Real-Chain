@@ -25,3 +25,5 @@ struct Product {
     address currentOwner; // Address of current owner
     bool isAuthentic; // Verifies if product is authentic
 }
+
+mapping(uint256 => Product) public products;
