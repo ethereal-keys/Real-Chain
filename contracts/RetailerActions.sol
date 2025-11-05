@@ -13,7 +13,7 @@ and functions that a retailer is allowed to call.
 interface RetailerActions is ProductTypes{
 
     // ----------- Role ----------------
-    // This is a unique code to chekc if someone is Retailer.
+    // This is a unique code to check if someone is Retailer.
     function RETAILER_ROLE() external view returns (bytes32);
 
     // -------- ERRORS -------------
@@ -30,7 +30,7 @@ interface RetailerActions is ProductTypes{
 
     event InventoryReceived(
         uint256 indexed productId, // Product Id
-        address indexed retailer, //Retailer name who recieved the product
+        address indexed retailer, //Retailer who recieved the product
         uint32 receiveDate // timestamp when received
     );
     event ProductSold(

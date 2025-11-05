@@ -32,51 +32,51 @@ interface DistributorActions is ProductTypes {
     // This event is triggered when a manufacturer sends a product to a distributor.
     event ShippedToDistributor(
         uint256 indexed productId,  // unique product id for the product being shipped
-        address indexed fromFactoryOrOwner, // 
-        address indexed distributor,
-        uint32 shipDate
+        address indexed fromFactoryOrOwner, // factory owner sending the product
+        address indexed distributor,    // distributor  receiving the product
+        uint32 shipDate // timestamp of shipment
     );
 
 
     // This event is triggered when a distributor prepares a shipment to a retailer.
     event RetailShipmentDeclared(
-        uint256 indexed productId,
-        address indexed distributor,
-        address indexed retailer,
-        uint32 shipDate,
-        bytes32 waybillHash
+        uint256 indexed productId,  // product Id being shipped
+        address indexed distributor,    // distributor sending the product
+        address indexed retailer,   // retailer receiving the product
+        uint32 shipDate,    // timestamp when shipment was dispatched
+        bytes32 waybillHash // off-chain shipping details (hashed)
     );
 
     // This event logs any shipping updates — for example, when goods leave a warehouse
     // or reach a delivery hub.
 
     event ShippingStatusUpdated(
-        uint256 indexed productId,
-        bytes32 trackingHash,
-        uint32 updatedAt
+        uint256 indexed productId,  // product Id being tracked
+        bytes32 trackingHash,   // tracking information (hashed pointer)
+        uint32 updatedAt    // timestamp when update was recorded
     );
 
 
     // This event logs when a distributor reports a damaged product.
 
     event DamagedReported(
-        uint256 indexed productId,
-        bytes32 reportHash,
-        uint32 reportedAt
+        uint256 indexed productId,  // product Id of damaged product
+        bytes32 reportHash, // damage report (photo, document, etc..) (hashed)
+        uint32 reportedAt   // timestamp when damage was reported
     );
 
     // --------------- Functions ----------------
 
-    
+
     function batchTransferToDistributor(
-        uint256[] calldata productIds,
-        address distributor,
-        uint32 shipDate
+        uint256[] calldata productIds,  // list of products being sent
+        address distributor,    // distributor receving it
+        uint32 shipDate // timestamp of shipment
     ) external;
 
     function createRetailShipment(
         uint256[] calldata productIds,
-        address retailer,
+        address retailer,   // retailer receiving the shipment
         uint32 shipDate,
         bytes32 waybillHash
     ) external;
