@@ -19,6 +19,7 @@ enum ProductStatus {
 struct Product {
     uint256 productId; // Used to index and identify product
     ProductStatus status; // Used to indicate current status of product in supply chain
+    string ipfsHash; // Used for metadata stored off-chain (images, SKU, description)
     address manufacturer; // Address of manufacturer
     uint256 manufactureTimestamp; // Time of manufacture, proof of authenticity
     address currentOwner; // Address of current owner
