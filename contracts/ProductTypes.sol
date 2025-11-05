@@ -30,11 +30,11 @@ contract SupplyChain {
         bool isAuthentic; // Verifies if product is authentic
     }
 
-    mapping(uint256 => Product) public products;
+    mapping(uint256 => productId) public products; // Assigning product id to products
 
     // --------------- Role Management ----------------
 
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE"); 
     bytes32 public constant MANUFACTURER_ROLE = keccak256("MANUFACTURER_ROLE");
     bytes32 public constant DISTRIBUTOR_ROLE  = keccak256("DISTRIBUTOR_ROLE");
     bytes32 public constant RETAILER_ROLE     = keccak256("RETAILER_ROLE");
