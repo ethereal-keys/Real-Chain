@@ -34,15 +34,20 @@ bytes32 public constant DISTRIBUTOR_ROLE  = keccak256("DISTRIBUTOR_ROLE");
 bytes32 public constant RETAILER_ROLE     = keccak256("RETAILER_ROLE");
 bytes32 public constant QC_ROLE           = keccak256("QC_ROLE");
 
-mapping(address => mapping(bytes32 => bool)) public hasRole; // checks if the address has that role
+mapping(address => mapping(bytes32 => bool)) public hasRole; // Checks if the address has that role
 
 constructor() {
-    // deployer is admin
+    // Deployer is admin
     hasRole[msg.sender][ADMIN_ROLE] = true;
 
-    // map roles to respective wallet addresses
+    // Map roles to respective wallet addresses
     hasRole[0xManufacturerWalletAddress][MANUFACTURER_ROLE] = true;
     hasRole[0xDistributorWalletAddress][DISTRIBUTOR_ROLE] = true;
     hasRole[0xRetailerWalletAddress][RETAILER_ROLE] = true;
     hasRole[0xQcInspectorWalletAddress][QC_ROLE] = true;
+}
+
+modifier onlyRole(bytes32 role) {
+    require(hasRole[msg.sender][role], "Unauthorized: Incorrect Role"); // Used to enforce role-based access control
+    _;
 }
