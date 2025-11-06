@@ -1,11 +1,11 @@
 # Real-Chain
-Ethereum Smart Contract Ecosystem for Supply Chain Provenance
+Tackling Counterfeiting in Licensed Entertainment Merchandise Using Blockchain
 
 # Blockchain Product Authentication System
 
-## 📋 Overview
+## Overview
 
-A blockchain-based product authentication system that enables manufacturers, distributors, retailers, and consumers to verify product authenticity through QR code scanning. Each product has a unique ID tracked on-chain, ensuring transparency and preventing counterfeiting.
+A blockchain-based product authentication system that enables manufacturers, distributors, retailers, and consumers to verify product authenticity (through QR code scanning) for licensed entertainment merchandise. Each product has a unique ID tracked on-chain, ensuring transparency and preventing counterfeiting. 
 
 ### Key Features
 - **QR Code Scanning**: Simple product verification (NFC chip support planned)
@@ -136,9 +136,9 @@ Product ID #12345:
 
 ---
 
-## 👥 Roles & Permissions
+## Roles & Permissions
 
-### 🏢 **System Administrator** (Brand Headquarters)
+### **System Administrator** (Brand Headquarters)
 
 **✅ Can:**
 - Deploy and upgrade smart contracts
@@ -151,7 +151,7 @@ Product ID #12345:
 - Change product authentication status once set
 - Change ownership of products they don't currently own
 
-### 🏭 **Manufacturers** (Factory)
+### **Manufacturers** (Factory)
 
 **✅ Can:**
 - Create (mint) new products
@@ -164,7 +164,7 @@ Product ID #12345:
 - Change products from other factories
 - Change Product IDs or creation dates after minting
 
-### 🚚 **Distributors** (Logistics Partners)
+### **Distributors** (Logistics Partners)
 
 **✅ Can:**
 - Update shipping status
@@ -175,7 +175,7 @@ Product ID #12345:
 - Create new products
 - Transfer products they don't own
 
-### 🏪 **Retailers** (Authorized Stores)
+### **Retailers** (Authorized Stores)
 
 **✅ Can:**
 - Mark products as sold
@@ -187,7 +187,7 @@ Product ID #12345:
 - Accept products not sent by authorized distributors
 - Change ownership of sold products
 
-### 👤 **Consumers** (End Customers)
+### **Consumers** (End Customers)
 
 **✅ Can (No Wallet Required):**
 - Verify product authenticity (read-only)
@@ -198,13 +198,21 @@ Product ID #12345:
 
 ---
 
-## 🛠 Technical Stack
+## Technical Stack
 
 - **Blockchain**: Polygon Network
 - **Storage**: IPFS for off-chain data
 - **Smart Contracts**: Solidity
 - **Frontend**: Web-based verification portal
 - **Authentication**: QR Codes (NFC planned)
+
+---
+
+## Setup and Deployment
+
+- We intend to use Remix IDE to deploy our contracts on the Ethereum network
+- Setup would require creating the respective wallets with their addresses before deploying contract on the platform
+(TBC)
 
 ---
 
