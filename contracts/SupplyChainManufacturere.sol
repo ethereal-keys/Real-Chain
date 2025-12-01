@@ -1,18 +1,29 @@
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
 
-contract SupplyChainManufacturer {
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+/**
+ * @title SupplyChainManufacturer
+ * @dev Optimized implementation to avoid stack too deep errors
+ */
+contract SupplyChainManufacturer is AccessControl, Pausable, ReentrancyGuard {
     
+    // ===== Product Structure and Enums =====
     enum ProductStatus {
         MANUFACTURED,
         QUALITY_CHECKED,
         IN_TRANSIT_TO_DISTRIBUTOR,
         WITH_DISTRIBUTOR,
         IN_TRANSIT_TO_RETAILER,
-        WITH_RETAILER,
+        IN_STORE,
         SOLD,
         RETURNED
     }
 
+    // Split the product struct into core and extended data
     struct ProductCore {
         uint256 productId;
         ProductStatus status;
@@ -37,30 +48,27 @@ contract SupplyChainManufacturer {
         bytes32 receiptIdHash;
     }
 
-    mapping(address => bool) public isManufacturer;
-    mapping(address => bool) public isQualityChecker;
-    mapping(address => bool) public isDistributor;
-    mapping(address => bool) public isRetailer;
-    mapping(address => bool) public isAdmin;
-    
-    // Product storage
+    // ===== Role Definitions =====
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant MANUFACTURER_ROLE = keccak256("MANUFACTURER_ROLE");
+    bytes32 public constant DISTRIBUTOR_ROLE = keccak256("DISTRIBUTOR_ROLE");
+    bytes32 public constant RETAILER_ROLE = keccak256("RETAILER_ROLE");
+    bytes32 public constant QC_ROLE = keccak256("QC_ROLE");
+
+    // ===== Storage =====
     mapping(uint256 => ProductCore) public productCore;
     mapping(uint256 => ProductExtended) public productExtended;
     mapping(uint256 => ProductChain) public productChain;
     mapping(uint256 => bool) public exists;
     
-    // Track products by owner
     mapping(address => uint256[]) public manufacturerProducts;
     mapping(address => uint256[]) public distributorProducts;
-    mapping(address => uint256[]) public retailerProducts;
     
-    // Track manufacturer factories
+    // Track authorized manufacturers and their factory IDs
+    mapping(address => bool) public authorizedManufacturers;
     mapping(address => uint16[]) public manufacturerFactories;
-    
-    // Contract owner
-    address public owner;
-    
-    // Events logging
+
+    // ===== Events =====
     event ProductMinted(
         uint256 indexed productId,
         address indexed manufacturer,
@@ -81,73 +89,105 @@ contract SupplyChainManufacturer {
         uint32 transferDate
     );
 
-    event ProductSold(
-        uint256 indexed productId,
-        address indexed retailer,
-        address customer,
-        uint32 saleDate
-    );
-
-    event DefectReported(
+    event ManufacturingDefectReported(
         uint256 indexed productId,
         address indexed manufacturer,
-        string reason
+        bytes32 defectReportHash
     );
 
-    constructor() {
-        owner = msg.sender;
-        isAdmin[msg.sender] = true;
+    event BatchTransfer(
+        uint256[] productIds,
+        address indexed from,
+        address indexed to
+    );
+
+    event PartnerAdded(bytes32 indexed role, address indexed account);
+    event PartnerRemoved(bytes32 indexed role, address indexed account);
+
+    // ===== Constructor =====
+    constructor(address admin) {
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(ADMIN_ROLE, admin);
     }
+
+    // ===== Modifiers =====
+    modifier productExists(uint256 productId) {
+        require(exists[productId], "Product does not exist");
+        _;
+    }
+
+    modifier productNotExists(uint256 productId) {
+        require(!exists[productId], "Product already exists");
+        _;
+    }
+
+    // ===== Admin Functions =====
     
-    // Admin Functions
-    function addManufacturer(address account, uint16[] memory factoryIds) external {
-        require(isAdmin[msg.sender], "Not admin");
+    function addManufacturer(address account, uint16[] calldata factoryIds) 
+        external 
+        onlyRole(ADMIN_ROLE) 
+    {
         require(account != address(0), "Invalid address");
-        
-        isManufacturer[account] = true;
+        grantRole(MANUFACTURER_ROLE, account);
+        authorizedManufacturers[account] = true;
         manufacturerFactories[account] = factoryIds;
+        emit PartnerAdded(MANUFACTURER_ROLE, account);
     }
 
-    function removeManufacturer(address account) external {
-        require(isAdmin[msg.sender], "Not admin");
-        
-        isManufacturer[account] = false;
+    function removeManufacturer(address account) 
+        external 
+        onlyRole(ADMIN_ROLE) 
+    {
+        revokeRole(MANUFACTURER_ROLE, account);
+        authorizedManufacturers[account] = false;
         delete manufacturerFactories[account];
+        emit PartnerRemoved(MANUFACTURER_ROLE, account);
     }
 
-    function addDistributor(address account) external {
-        require(isAdmin[msg.sender], "Not admin");
+    function addDistributor(address account) 
+        external 
+        onlyRole(ADMIN_ROLE) 
+    {
         require(account != address(0), "Invalid address");
-        
-        isDistributor[account] = true;
+        grantRole(DISTRIBUTOR_ROLE, account);
+        emit PartnerAdded(DISTRIBUTOR_ROLE, account);
     }
 
-    function addRetailer(address account) external {
-        require(isAdmin[msg.sender], "Not admin");
+    function addInspector(address account) 
+        external 
+        onlyRole(ADMIN_ROLE) 
+    {
         require(account != address(0), "Invalid address");
-        
-        isRetailer[account] = true;
+        grantRole(QC_ROLE, account);
+        emit PartnerAdded(QC_ROLE, account);
     }
 
-    function addQualityChecker(address account) external {
-        require(isAdmin[msg.sender], "Not admin");
-        require(account != address(0), "Invalid address");
-        
-        isQualityChecker[account] = true;
+    function pause() external onlyRole(ADMIN_ROLE) {
+        _pause();
     }
-    
-    // Manufacturer Functions
+
+    function unpause() external onlyRole(ADMIN_ROLE) {
+        _unpause();
+    }
+
+    // ===== Manufacturer Functions =====
     
     function mintProduct(
         uint256 productId,
         uint16 factoryId,
         string calldata ipfsHash,
         uint32 manufactureDate
-    ) external {
-        require(isManufacturer[msg.sender], "Not manufacturer");
-        require(!exists[productId], "Product already exists");
+    ) 
+        external 
+        whenNotPaused 
+        onlyRole(MANUFACTURER_ROLE)
+        productNotExists(productId)
+        nonReentrant
+    {
+        // Validate factory ID
         require(_isValidFactory(msg.sender, factoryId), "Invalid factory ID");
 
+        // Create product core data
         ProductCore storage core = productCore[productId];
         core.productId = productId;
         core.status = ProductStatus.MANUFACTURED;
@@ -156,6 +196,7 @@ contract SupplyChainManufacturer {
         core.isAuthentic = true;
         core.factoryId = factoryId;
 
+        // Create extended data
         ProductExtended storage extended = productExtended[productId];
         extended.ipfsHash = ipfsHash;
         extended.manufactureTimestamp = manufactureDate;
@@ -168,12 +209,15 @@ contract SupplyChainManufacturer {
         emit ProductMinted(productId, msg.sender, factoryId, manufactureDate);
     }
 
-    function markQualityPassed(uint256 productId, uint32 checkDate) external {
-        require(isQualityChecker[msg.sender], "Not quality checker");
-        require(exists[productId], "Product does not exist");
-        
+    function markQualityPassed(uint256 productId, uint32 checkDate) 
+        external 
+        whenNotPaused 
+        onlyRole(QC_ROLE)
+        productExists(productId)
+        nonReentrant
+    {
         ProductCore storage core = productCore[productId];
-        require(core.status == ProductStatus.MANUFACTURED, "Invalid status");
+        require(core.status == ProductStatus.MANUFACTURED, "Invalid state");
         
         core.status = ProductStatus.QUALITY_CHECKED;
         productExtended[productId].qualityCheckDate = checkDate;
@@ -185,10 +229,14 @@ contract SupplyChainManufacturer {
         uint256 productId,
         address distributor,
         uint32 transferDate
-    ) external {
-        require(isManufacturer[msg.sender], "Not manufacturer");
-        require(exists[productId], "Product does not exist");
-        require(isDistributor[distributor], "Not authorized distributor");
+    ) 
+        external 
+        whenNotPaused 
+        onlyRole(MANUFACTURER_ROLE)
+        productExists(productId)
+        nonReentrant
+    {
+        require(hasRole(DISTRIBUTOR_ROLE, distributor), "Not authorized distributor");
         
         ProductCore storage core = productCore[productId];
         require(core.currentOwner == msg.sender, "Not owner");
@@ -205,83 +253,61 @@ contract SupplyChainManufacturer {
         emit TransferredToDistributor(productId, msg.sender, distributor, transferDate);
     }
 
-
-
-    function acceptDistributorDelivery(uint256 productId) external {
-        require(isDistributor[msg.sender], "Not distributor");
-        require(exists[productId], "Product does not exist");
-        
-        ProductCore storage core = productCore[productId];
-        require(core.currentOwner == msg.sender, "Not owner");
-        require(core.status == ProductStatus.IN_TRANSIT_TO_DISTRIBUTOR, "Invalid status");
-        
-        core.status = ProductStatus.WITH_DISTRIBUTOR;
-    }
-
-    function transferToRetailer(
-        uint256 productId,
-        address retailer,
+    function batchTransferToDistributor(
+        uint256[] calldata productIds,
+        address distributor,
         uint32 transferDate
-    ) external {
-        require(isDistributor[msg.sender], "Not distributor");
-        require(exists[productId], "Product does not exist");
-        require(isRetailer[retailer], "Not authorized retailer");
+    ) 
+        external 
+        whenNotPaused 
+        onlyRole(MANUFACTURER_ROLE)
+        nonReentrant
+    {
+        require(hasRole(DISTRIBUTOR_ROLE, distributor), "Not authorized distributor");
         
-        ProductCore storage core = productCore[productId];
-        require(core.currentOwner == msg.sender, "Not owner");
-        require(core.status == ProductStatus.WITH_DISTRIBUTOR, "Invalid status");
+        for (uint i = 0; i < productIds.length; i++) {
+            uint256 pid = productIds[i];
+            if (!exists[pid]) continue;
+            
+            ProductCore storage core = productCore[pid];
+            if (core.currentOwner != msg.sender || 
+                core.status != ProductStatus.QUALITY_CHECKED) {
+                continue;
+            }
 
-        core.status = ProductStatus.IN_TRANSIT_TO_RETAILER;
-        core.currentOwner = retailer;
-        
-        productChain[productId].retailer = retailer;
-        productExtended[productId].transferCount++;
-        
-        retailerProducts[retailer].push(productId);
+            core.status = ProductStatus.IN_TRANSIT_TO_DISTRIBUTOR;
+            core.currentOwner = distributor;
+            productChain[pid].distributor = distributor;
+            productExtended[pid].transferCount++;
+            distributorProducts[distributor].push(pid);
+        }
+
+        emit BatchTransfer(productIds, msg.sender, distributor);
     }
 
-    function acceptRetailerDelivery(uint256 productId) external {
-        require(isRetailer[msg.sender], "Not retailer");
-        require(exists[productId], "Product does not exist");
-        
-        ProductCore storage core = productCore[productId];
-        require(core.currentOwner == msg.sender, "Not owner");
-        require(core.status == ProductStatus.IN_TRANSIT_TO_RETAILER, "Invalid status");
-        
-        core.status = ProductStatus.WITH_RETAILER;
-    }
-
-    function sellProduct(uint256 productId, address customer, uint32 saleDate) external {
-        require(isRetailer[msg.sender], "Not retailer");
-        require(exists[productId], "Product does not exist");
-        
-        ProductCore storage core = productCore[productId];
-        require(core.currentOwner == msg.sender, "Not owner");
-        require(core.status == ProductStatus.WITH_RETAILER, "Product not in store");
-        
-        core.status = ProductStatus.SOLD;
-        core.currentOwner = customer;
-        productExtended[productId].saleDate = saleDate;
-        
-        emit ProductSold(productId, msg.sender, customer, saleDate);
-    }
-
-    function reportDefect(uint256 productId, string calldata reason) external {
-        require(isManufacturer[msg.sender], "Not manufacturer");
-        require(exists[productId], "Product does not exist");
-        
+    function updateManufacturingDefect(
+        uint256 productId,
+        bytes32 defectReportHash
+    ) 
+        external 
+        whenNotPaused 
+        onlyRole(MANUFACTURER_ROLE)
+        productExists(productId)
+        nonReentrant
+    {
         ProductCore storage core = productCore[productId];
         require(core.manufacturer == msg.sender, "Not original manufacturer");
         
         core.isAuthentic = false;
-        emit DefectReported(productId, msg.sender, reason);
+        emit ManufacturingDefectReported(productId, msg.sender, defectReportHash);
     }
 
-    // View Functions
+    // ===== View Functions =====
     
     function getProductCore(uint256 productId) 
         external 
         view 
+        productExists(productId)
         returns (
             uint256 id,
             ProductStatus status,
@@ -291,7 +317,6 @@ contract SupplyChainManufacturer {
             uint16 factoryId
         ) 
     {
-        require(exists[productId], "Product does not exist");
         ProductCore memory core = productCore[productId];
         return (
             core.productId,
@@ -306,6 +331,7 @@ contract SupplyChainManufacturer {
     function getProductExtended(uint256 productId)
         external
         view
+        productExists(productId)
         returns (
             string memory ipfsHash,
             uint32 manufactureTimestamp,
@@ -315,7 +341,6 @@ contract SupplyChainManufacturer {
             uint32 transferCount
         )
     {
-        require(exists[productId], "Product does not exist");
         ProductExtended memory extended = productExtended[productId];
         return (
             extended.ipfsHash,
@@ -330,19 +355,20 @@ contract SupplyChainManufacturer {
     function getProductChain(uint256 productId)
         external
         view
+        productExists(productId)
         returns (
             address distributor,
             address retailer,
             bytes32 receiptIdHash
         )
     {
-        require(exists[productId], "Product does not exist");
         ProductChain memory chain = productChain[productId];
         return (chain.distributor, chain.retailer, chain.receiptIdHash);
     }
 
     function verifyAuthenticity(uint256 productId) 
         external 
+        productExists(productId)
         returns (
             bool isAuthentic,
             ProductStatus currentStatus,
@@ -350,8 +376,6 @@ contract SupplyChainManufacturer {
             uint32 manufactureDate
         ) 
     {
-        require(exists[productId], "Product does not exist");
-        
         productExtended[productId].scanCount++;
         
         ProductCore memory core = productCore[productId];
@@ -371,23 +395,8 @@ contract SupplyChainManufacturer {
         return manufacturerProducts[manufacturer];
     }
 
-    function getDistributorProducts(address distributor) 
-        external 
-        view 
-        returns (uint256[] memory) 
-    {
-        return distributorProducts[distributor];
-    }
-
-    function getRetailerProducts(address retailer) 
-        external 
-        view 
-        returns (uint256[] memory) 
-    {
-        return retailerProducts[retailer];
-    }
-
-    // Internal Helper Function
+    // ===== Internal Helper Functions =====
+    
     function _isValidFactory(address manufacturer, uint16 factoryId) 
         internal 
         view 
