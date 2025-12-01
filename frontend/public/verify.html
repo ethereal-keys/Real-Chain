@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Real-Chain Product Verification</title>
+        <link rel="stylesheet" href="/verify.css" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>Product Verification</h1>
+            <p>Verify product ownership and authenticity</p>
+
+            <div class="info-section">
+                <label>Product ID:</label>
+                <div id="productIdDisplay" class="pill">Loading...</div>
+            </div>
+
+            <div id="loading" class="message info">
+                Verifying product, please wait...
+            </div>
+
+            <div id="error" class="message error" style="display: none">
+                <strong>Verification failed.</strong>
+                <p id="errorMessage">
+                    There was a problem verifying this product.
+                </p>
+            </div>
+
+            <div id="result" class="result-card" style="display: none">
+                <div class="result-row">
+                    <span class="result-label">Status:</span>
+                    <span id="statusValue" class="result-value status-pill">
+                        —
+                    </span>
+                </div>
+
+                <div class="result-row">
+                    <span class="result-label">Authentic:</span>
+                    <span id="authValue" class="result-value">—</span>
+                </div>
+
+                <div class="result-row">
+                    <span class="result-label">Manufacturer:</span>
+                    <span id="manufacturerValue" class="result-value monospace">
+                        —
+                    </span>
+                </div>
+
+                <div class="result-row">
+                    <span class="result-label">Current Owner:</span>
+                    <span id="ownerValue" class="result-value monospace">
+                        —
+                    </span>
+                </div>
+
+                <div class="result-row">
+                    <span class="result-label">Factory ID:</span>
+                    <span id="factoryValue" class="result-value">—</span>
+                </div>
+
+                <div class="result-row">
+                    <span class="result-label">Product:</span>
+                    <span id="productName" class="result-value"></span>
+                </div>
+
+                <div class="result-row">
+                    <span class="result-label">Images:</span>
+                    <div
+                        id="productImages"
+                        class="result-value images-container"
+                    ></div>
+                </div>
+            </div>
+        </div>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+            import {
+                getFirestore,
+                doc,
+                getDoc,
+            } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+            import {
+                getStorage,
+                ref,
+                getDownloadURL,
+            } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+
+            /**
+             * 1. Get config from https://console.firebase.google.com/project/real-chain/settings/general/web:ZTBlNDJkZGItMTc3ZC00YjY1LThhNzUtYmRkMDc5MDVlZjY3.
+             * 2. Copy and paste variable.
+             */
+            const firebaseConfig = {
+                apiKey: "AIzaSyD-NN_FGVYBxFW15vopgMaQHi3m7TBPLNM",
+                authDomain: "real-chain.firebaseapp.com",
+                projectId: "real-chain",
+                storageBucket: "real-chain.firebasestorage.app",
+                messagingSenderId: "232894299524",
+                appId: "1:232894299524:web:b80e070865ac493aab31d1",
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const storage = getStorage(app);
+
+            async function loadProductFromFirestore(productId) {
+                const productNameEl = document.getElementById("productName");
+                const productImagesEl =
+                    document.getElementById("productImages");
+
+                if (!productId) {
+                    if (productNameEl)
+                        productNameEl.textContent = "Unknown product";
+                    if (productImagesEl)
+                        productImagesEl.textContent = "No images available";
+                    return;
+                }
+
+                try {
+                    const docRef = doc(db, "products", productId);
+                    const snap = await getDoc(docRef);
+
+                    if (!snap.exists()) {
+                        if (productNameEl)
+                            productNameEl.textContent = "Product not found";
+                        if (productImagesEl)
+                            productImagesEl.textContent = "No images available";
+                        return;
+                    }
+
+                    const data = snap.data();
+                    const { name, images } = data;
+
+                    if (productNameEl) {
+                        productNameEl.textContent = name || "Unnamed product";
+                    }
+
+                    if (!productImagesEl) return;
+                    productImagesEl.innerHTML = "";
+
+                    if (Array.isArray(images) && images.length > 0) {
+                        for (const imagePath of images) {
+                            try {
+                                const imageRef = ref(storage, imagePath);
+                                const url = await getDownloadURL(imageRef);
+
+                                const img = document.createElement("img");
+                                img.src = url;
+                                img.alt = name || "Product image";
+                                img.loading = "lazy";
+                                productImagesEl.appendChild(img);
+                            } catch (imgErr) {
+                                console.error(
+                                    "Error loading image from Storage:",
+                                    imagePath,
+                                    imgErr,
+                                );
+                            }
+                        }
+                    } else {
+                        productImagesEl.textContent = "No images available";
+                    }
+                } catch (err) {
+                    console.error("Error fetching product from Firestore", err);
+                    if (productNameEl)
+                        productNameEl.textContent =
+                            "Error loading product details";
+                    if (productImagesEl)
+                        productImagesEl.textContent = "No images available";
+                }
+            }
+
+            window.loadProductFromFirestore = loadProductFromFirestore;
+        </script>
+
+        <script type="module">
+            import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.2.0/ethers.esm.min.js";
+
+            const CONTRACT_ADDRESS =
+                "0x77196Eac8E14C73d403dE8f1872aC4f9aBEC79c8";
+
+            const CONTRACT_ABI = [
+                "function getProductCore(uint256 productId) view returns (uint256 id, uint8 status, address manufacturer, address currentOwner, bool isAuthentic, uint16 factoryId)",
+                "function getProductExtended(uint256 productId) view returns (string ipfsHash, uint32 manufactureTimestamp, uint32 qualityCheckDate, uint32 saleDate, uint32 scanCount, uint32 transferCount)",
+                "function getProductChain(uint256 productId) view returns (address distributor, address retailer, bytes32 receiptIdHash)",
+            ];
+
+            function extractNumericId(productIdString) {
+                if (!productIdString) throw new Error("Invalid productId");
+
+                const numeric = productIdString.replace(/\D+/g, "");
+
+                if (!numeric) {
+                    throw new Error(
+                        `Product ID contains no numeric value: ${productIdString}`,
+                    );
+                }
+
+                const id = Number(numeric);
+
+                if (!Number.isSafeInteger(id)) {
+                    throw new Error(
+                        `Product ID is too large for JS number: ${numeric}`,
+                    );
+                }
+
+                return id;
+            }
+
+            export async function getProvider() {
+                return new ethers.providers.JsonRpcProvider(
+                    "https://rpc-amoy.polygon.technology/",
+                    {
+                        chainId: 80002,
+                        name: "polygon-amoy",
+                    },
+                );
+            }
+
+            /**
+             * Fetch product core data from the contract and return a structured object:
+             * {
+             *   id: string,
+             *   statusIndex: number,
+             *   manufacturer: string,
+             *   currentOwner: string,
+             *   isAuthentic: boolean,
+             *   factoryId: number
+             * }
+             */
+            async function fetchProduct(productIdString) {
+                const provider = await getProvider();
+
+                const net = await provider.getNetwork();
+                console.log("Using network:", net.chainId, net.name);
+
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                console.log("Contract bytecode length:", code.length);
+
+                if (code === "0x") {
+                    throw new Error(
+                        "Contract not deployed at this address on this network.",
+                    );
+                }
+
+                const contract = new ethers.Contract(
+                    CONTRACT_ADDRESS,
+                    CONTRACT_ABI,
+                    provider,
+                );
+
+                const id = extractNumericId(productIdString);
+                console.debug(`Calling contract getProductCore(${id})`);
+
+                try {
+                    const core = await contract.getProductCore(id);
+                    console.debug("Raw getProductCore result:", core);
+
+                    const [
+                        onchainIdRaw,
+                        statusRaw,
+                        manufacturer,
+                        currentOwner,
+                        isAuthenticRaw,
+                        factoryIdRaw,
+                    ] = core;
+
+                    const toNum = (v) => {
+                        if (
+                            ethers.BigNumber &&
+                            ethers.BigNumber.isBigNumber(v)
+                        ) {
+                            return v.toNumber();
+                        }
+                        if (typeof v === "number") return v;
+                        return parseInt(v.toString(), 10);
+                    };
+
+                    const toStr = (v) => (v != null ? v.toString() : "");
+
+                    const statusIndex = toNum(statusRaw);
+                    const factoryId = toNum(factoryIdRaw);
+                    const onchainId = toStr(onchainIdRaw);
+                    const isAuthentic = Boolean(isAuthenticRaw);
+
+                    return {
+                        id: onchainId,
+                        statusIndex,
+                        manufacturer,
+                        currentOwner,
+                        isAuthentic,
+                        factoryId,
+                    };
+                } catch (err) {
+                    console.error("Error in getProductCore or decoding:", err);
+                    if (err.reason) {
+                        throw new Error(err.reason);
+                    }
+                    throw err;
+                }
+            }
+
+            window.fetchProduct = fetchProduct;
+        </script>
+
+        <!-- Page orchestration + enum → UI mapping -->
+        <script src="/verify.js"></script>
+    </body>
+</html>

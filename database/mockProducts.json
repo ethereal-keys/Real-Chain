@@ -1,0 +1,112 @@
+[
+  {
+    "productId": "p01",
+    "name": "Mickey Mouse Holiday Plush",
+    "serialNumber": "DIS-PLUSH-2024-001",
+    "price": 29.99,
+    "images": [
+      "images/p01-front.png",
+      "images/p01-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p02",
+    "name": "Spider-Man Web Shooter Replica",
+    "serialNumber": "MAR-PROP-2024-045",
+    "price": 89.99,
+    "images": [
+      "images/p02-front.png",
+      "images/p02-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p03",
+    "name": "Stranger Things Hellfire Club T-Shirt",
+    "serialNumber": "NET-APP-2024-789",
+    "price": 24.99,
+    "images": [
+      "images/p03-front.png",
+      "images/p03-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p04",
+    "name": "Pikachu Funko Pop Vinyl Figure",
+    "serialNumber": "POK-FIG-2024-255",
+    "price": 14.99,
+    "images": [
+      "images/p04-front.png",
+      "images/p04-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p05",
+    "name": "Batman The Dark Knight Action Figure",
+    "serialNumber": "DC-FIG-2024-112",
+    "price": 34.99,
+    "images": [
+      "images/p05-front.png",
+      "images/p05-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p06",
+    "name": "Studio Ghibli Totoro Umbrella",
+    "serialNumber": "GHI-ACC-2024-523",
+    "price": 39.99,
+    "images": [
+      "images/p06-front.png",
+      "images/p06-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p07",
+    "name": "Star Wars Baby Yoda Plush",
+    "serialNumber": "SW-PLUSH-2024-667",
+    "price": 24.99,
+    "images": [
+      "images/p07-front.png",
+      "images/p07-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p08",
+    "name": "Harry Potter Gryffindor Scarf",
+    "serialNumber": "WB-APP-2024-334",
+    "price": 29.99,
+    "images": [
+      "images/p08-front.png",
+      "images/p08-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p09",
+    "name": "The Legend of Zelda Master Sword Replica",
+    "serialNumber": "NINT-PROP-2024-889",
+    "price": 129.99,
+    "images": [
+      "images/p09-front.png",
+      "images/p09-back.png"
+    ],
+    "warrantyInfo": null
+  },
+  {
+    "productId": "p10",
+    "name": "Friends Central Perk Coffee Mug",
+    "serialNumber": "WB-MUG-2024-776",
+    "price": 19.99,
+    "images": [
+      "images/p10-front.png",
+      "images/p10-back.png"
+    ],
+    "warrantyInfo": null
+  }
+]

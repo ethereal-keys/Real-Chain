@@ -1,0 +1,173 @@
+/* Match style of index.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+p {
+    color: #666;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.info-section {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.pill {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    color: #333;
+    word-break: break-all;
+}
+
+/* Messages */
+
+.message {
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.message.info {
+    background-color: #e7f4e8;
+    border: 1px solid #c6e6c9;
+    color: #2e7d32;
+}
+
+.message.error {
+    background-color: #fdecea;
+    border: 1px solid #f5c2c0;
+    color: #c6372c;
+}
+
+/* Results card */
+
+.result-card {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 20px;
+    background-color: #fafafa;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.result-label {
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+    min-width: 90px;
+}
+
+.result-value {
+    flex: 1;
+    text-align: right;
+    color: #555;
+    word-break: break-word;
+}
+
+.monospace {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+}
+
+/* Link styling */
+
+.link {
+    color: #2196f3;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+/* Status pill coloring */
+
+.status-pill {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    font-size: 13px;
+}
+
+/* Generic “classes” we map ProductStatus → these */
+.status-ok {
+    background-color: #e7f4e8;
+    border-color: #4caf50;
+    color: #2e7d32;
+}
+
+.status-pending {
+    background-color: #fff7e6;
+    border-color: #ffb300;
+    color: #e69100;
+}
+
+.status-error {
+    background-color: #fdecea;
+    border-color: #f44336;
+    color: #c6372c;
+}
+
+/* Optional: product images */
+
+.images-container img {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-left: 6px;
+}
+
+/* Responsive tweaks */
+
+@media (max-width: 480px) {
+    .result-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .result-value {
+        text-align: left;
+        margin-top: 4px;
+    }
+}
