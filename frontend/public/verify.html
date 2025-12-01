@@ -88,17 +88,10 @@
             } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 
             /**
-             * 1. Get config from https://console.firebase.google.com/project/real-chain/settings/general/web:ZTBlNDJkZGItMTc3ZC00YjY1LThhNzUtYmRkMDc5MDVlZjY3.
+             * 1. Get config from https://console.firebase.google.com/project/real-chain-92c4b/settings/general/web:ZjE2NjkzMzMtMGZhYS00YTY4LTliMjEtZDkyNTNkZmFhMWY3
              * 2. Copy and paste variable.
              */
-            const firebaseConfig = {
-                apiKey: "AIzaSyD-NN_FGVYBxFW15vopgMaQHi3m7TBPLNM",
-                authDomain: "real-chain.firebaseapp.com",
-                projectId: "real-chain",
-                storageBucket: "real-chain.firebasestorage.app",
-                messagingSenderId: "232894299524",
-                appId: "1:232894299524:web:b80e070865ac493aab31d1",
-            };
+            const firebaseConfig = {};
 
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
