@@ -26,6 +26,30 @@ function getProductIdFromPath() {
   return decodeURIComponent(parts[parts.length - 1] || "");
 }
 
+<<<<<<< HEAD
+=======
+async function fetchProduct(productId) {
+  // const url = `https://api.cse540project.com/${encodeURIComponent(productId)}`;
+  // const response = await fetch(url, {
+  //   method: "GET",
+  //   headers: {
+  //     Accept: "application/json",
+  //   },
+  // });
+  // if (!response.ok) {
+  //   throw new Error(`Server responded with status ${response.status}`);
+  // }
+  // return response.json();
+  const mockResponse = {
+    status: "verified",
+    owner: "John Doe",
+    ipfsHash: "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
+    date: new Date().toISOString(),
+  };
+  return mockResponse;
+}
+
+>>>>>>> a876da6 (Added verification page and web server.)
 function showElement(id, show) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -35,16 +59,25 @@ function showElement(id, show) {
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) {
+<<<<<<< HEAD
     el.textContent = text != null && text !== "" ? String(text) : "—";
   }
 }
 
 function applyStatusStyle(statusIndex, isAuthentic) {
+=======
+    el.textContent = text || "—";
+  }
+}
+
+function applyStatusStyle(statusText) {
+>>>>>>> a876da6 (Added verification page and web server.)
   const el = document.getElementById("statusValue");
   if (!el) return;
 
   el.classList.remove("status-ok", "status-pending", "status-error");
 
+<<<<<<< HEAD
   if (isAuthentic === false) {
     el.classList.add("status-error");
     return;
@@ -55,6 +88,29 @@ function applyStatusStyle(statusIndex, isAuthentic) {
     el.classList.add(cls);
   } else {
     el.classList.add("status-pending");
+=======
+  if (!statusText) {
+    return;
+  }
+
+  const s = statusText.toLowerCase();
+
+  if (
+    s.includes("valid") ||
+    s.includes("verified") ||
+    s.includes("authentic")
+  ) {
+    el.classList.add("status-ok");
+  } else if (s.includes("pending")) {
+    el.classList.add("status-pending");
+  } else if (
+    s.includes("invalid") ||
+    s.includes("fraud") ||
+    s.includes("revoked") ||
+    s.includes("error")
+  ) {
+    el.classList.add("status-error");
+>>>>>>> a876da6 (Added verification page and web server.)
   }
 }
 
@@ -65,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const errorMessageEl = document.getElementById("errorMessage");
   const resultEl = document.getElementById("result");
 
+<<<<<<< HEAD
   const productId = getProductIdFromPath();
 
   if (productIdDisplay) {
@@ -115,5 +172,41 @@ document.addEventListener("DOMContentLoaded", async () => {
           ? err.message
           : "There was a problem verifying this product.";
     }
+=======
+  const path = window.location.pathname;
+  const productId = path.split("/")[2]; // "ABC123"
+
+  productIdDisplay.textContent = productId || "Unknown";
+
+  try {
+    const verifyData = await fetchProduct(productId);
+
+    const statusValue = document.getElementById("statusValue");
+
+    statusValue.textContent = verifyData.status;
+
+    // status pill class
+    statusValue.classList.remove("status-ok", "status-pending", "status-error");
+    if (verifyData.status === "verified") {
+      statusValue.classList.add("status-ok");
+    } else if (verifyData.status === "Pending") {
+      statusValue.classList.add("status-pending");
+    } else {
+      statusValue.classList.add("status-error");
+    }
+
+    await loadProductFromFirestore(productId);
+
+    loadingEl.style.display = "none";
+    errorEl.style.display = "none";
+    resultEl.style.display = "block";
+  } catch (err) {
+    console.error(err);
+    loadingEl.style.display = "none";
+    resultEl.style.display = "none";
+    errorEl.style.display = "block";
+    errorMessageEl.textContent =
+      err.message || "There was a problem verifying this product.";
+>>>>>>> a876da6 (Added verification page and web server.)
   }
 });
