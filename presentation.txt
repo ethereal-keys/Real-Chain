@@ -1,0 +1,16 @@
+node cli.js call manu mintProduct 676 2 "QmHash6767" 1764641304
+node cli.js call manu getProductCore 676
+node cli.js call qc markQualityPassed 676 1764641904
+node cli.js call manu getProductCore 676
+node cli.js call manu transferToDistributor 676 0x5bdbc77ba6fd354a22c3e8dfb122722d321f3b91 1764643304
+node cli.js call dist acceptDistributorDelivery 676
+node cli.js call manu getProductCore 676
+node cli.js call dist transferToRetailer 676 0xeade29a6daf40cc19671aec021d692cddf407fec 1764643354
+node cli.js call rl acceptRetailerDelivery 676
+node cli.js call manu getProductCore 676
+node cli.js call rl sellProduct 676 0xb30ee27129b52aa17492b4bc728080d8c328eb25 1764643454
+node cli.js call manu getProductCore 676
+node cli.js call manu getManufacturerProducts 0x43e5bd17bdd2a599050dcbf9dfbd65b04caeeb12
+node cli.js call dist getDistributorProducts 0x5bdbc77ba6fd354a22c3e8dfb122722d321f3b91
+node cli.js call rl getRetailerProducts 0xeade29a6daf40cc19671aec021d692cddf407fec
+node cli.js call manu getProductChain 676
