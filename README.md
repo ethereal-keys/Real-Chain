@@ -221,7 +221,15 @@ Examples:
 ```node cli.js call contract productCore 1001```
 ```node cli.js call manu mintProduct 1001 1 "QmHash..." 1734825600```
 
+- For the verification frontend, you would need to run the following commands:
+```
+cd frontend
+npm i
+node server.js
+```
 ---
+
+Once it is running, you can visit the page on your localhost and you'll have the frontend available, where you can generate and verify the product using the QR code
 
 ## 📝 License
 
