@@ -213,6 +213,13 @@ Product ID #12345:
 - We intend to use Remix IDE to deploy our contracts on the Ethereum network
 - Setup would require creating the respective wallets with their addresses before deploying contract on the platform
 (TBC)
+- To use the CLI, you'll need to install Node.js, ethers.js, and dotenv. Ensure that you have the private keys necessary, in a .env file at the root level
+- You can run the CLI with the command
+```node cli.js call {role} {functionName} [arguments]```
+
+Examples:
+```node cli.js call contract productCore 1001```
+```node cli.js call manu mintProduct 1001 1 "QmHash..." 1734825600```
 
 ---
 
